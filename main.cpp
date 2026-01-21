@@ -1,5 +1,5 @@
 #include "gurobi_c++.h"
-
+#include <vector>
 using namespace std;
 
 class WarehouseInstance {
@@ -10,7 +10,7 @@ class WarehouseInstance {
     vector<int> rank_capacity;
     vector<int> product_circuit;
     vector<vector<int>> aisles_racks;
-    vector<int> orders;
+    vector<vector<int>> orders;
 
     int num_racks;
     int total_slots;
@@ -150,11 +150,48 @@ int main(int argc, char** argv) {
         }
     }
 
-    // Contraintes sur z pas encore faites
+    // La commande passe par les racks contenant ses produits
+    for (int c=0; c<data.num_orders; c++){
+        for (int ii=1; ii<data.num_racks-1; ii++){
+            for (int j : data.orders[c]){
+                GRBLinExpr lhs=0;
+                for (int i=0; i<ii; i++){
+                    lhs += z[c][i][ii];
+                }
+                model.addConstr(lhs >= x[ii][j]);
+            }
+        }
+    }
 
+    // Contraintes de flot
+    for (int c=0; c<data.num_orders; c++){
+        GRBLinExpr lhs = 0;
+        for (int i=1; i<data.num_racks-1; i++){
+            lhs += z[c][0][i];
+        }
+        model.addConstr(lhs == 1);
+    }
 
-    
+    for (int c=0; c<data.num_orders; c++){
+        GRBLinExpr lhs = 0;
+        for (int i=1; i<data.num_racks-1; i++){
+            lhs += z[c][i][data.num_racks-1];
+        }
+        model.addConstr(lhs == 1);
+    }
 
+    for (int c=0; c<data.num_orders; c++){
+        for (int ii=1; ii<data.num_racks-1; ii++){
+            GRBLinExpr lhs = 0;
+            for (int i=0; i<ii; i++){
+                lhs += z[c][i][ii];
+            }
+            for (int i=ii+1; i<data.num_racks; i++){
+                lhs -= z[c][ii][i];
+            }
+            model.addConstr(lhs == 0);
+        }
+    }
 
 
     return 0;
