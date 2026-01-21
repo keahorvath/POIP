@@ -1,0 +1,43 @@
+cmake_minimum_required(VERSION 3.11)
+
+project(hpg C)
+include(FetchContent)
+
+option(CXX "enable C++ compilation" ON)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -march=native")
+
+if(CXX)
+  enable_language(CXX)
+endif()
+
+set(CMAKE_CXX_STANDARD 20)
+
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR})
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE "Release")
+endif()
+message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
+
+if(MSVC AND MT)
+  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
+  set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /MT")
+  set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /MTd")
+endif()
+
+find_package(GUROBI)
+
+if(GUROBI_FOUND)
+  message(STATUS "Gurobi found")
+  include_directories(${GUROBI_INCLUDE_DIRS}) 
+  include_directories(${CMAKE_SOURCE_DIR}/include)
+
+  add_executable(main.exe main.cpp)
+  target_link_libraries(main.exe optimized ${GUROBI_CXX_LIBRARY}
+                          debug ${GUROBI_CXX_DEBUG_LIBRARY})
+  target_link_libraries(main.exe ${GUROBI_LIBRARY})
+  target_compile_definitions(main.exe PRIVATE USE_GUROBI)
+
+else()
+  message(STATUS "Gurobi not found")
+endif()
