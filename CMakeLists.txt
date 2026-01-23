@@ -32,7 +32,7 @@ if(GUROBI_FOUND)
   include_directories(${GUROBI_INCLUDE_DIRS}) 
   include_directories(${CMAKE_SOURCE_DIR}/include)
 
-  add_executable(main.exe main.cpp)
+  add_executable(main.exe main.cpp src/Model.cpp src/WarehouseLoader.cpp)
   target_link_libraries(main.exe optimized ${GUROBI_CXX_LIBRARY}
                           debug ${GUROBI_CXX_DEBUG_LIBRARY})
   target_link_libraries(main.exe ${GUROBI_LIBRARY})
