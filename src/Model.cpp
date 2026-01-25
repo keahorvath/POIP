@@ -1,5 +1,5 @@
 
-#include "WarehouseInstance.hpp"
+#include "Model.hpp"
 #include "gurobi_c++.h"
 
 using namespace std;
@@ -72,7 +72,7 @@ void Modele::solve(){
         for (int j=0; j<data.num_products; j++){
             lhs += x[i][j];
         }
-        model.addConstr(lhs <= data.rank_capacity[i]);
+        model.addConstr(lhs <= data.rack_capacity[i]);
     }
 
     // Aération
@@ -84,8 +84,8 @@ void Modele::solve(){
             for (int j=0; j<data.num_products; j++){
                 lhs += x[i][j];
             }
-            lhsL += data.rank_capacity[i] - lhs;
-            lhsR += data.rank_capacity[i] * data.aeration_rate;
+            lhsL += data.rack_capacity[i] - lhs;
+            lhsR += data.rack_capacity[i] * data.aeration_rate;
         }
         lhsR = (lhsR-1)/100 + 1;
         model.addConstr(lhsL <= lhsR);
