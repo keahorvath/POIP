@@ -2,6 +2,7 @@
 #define WAREHOUSEINSTANCE_HPP
 
 #include <vector>
+#include <iostream>
 
 struct WarehouseInstance {
     std::vector<std::vector<int>> adjacency;
@@ -17,6 +18,8 @@ struct WarehouseInstance {
     int num_circuits;
     int num_aisles;
     int num_orders;
+
+    void print();
 };
 
 #endif
