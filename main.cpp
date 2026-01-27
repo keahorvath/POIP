@@ -14,4 +14,8 @@ int main(int argc, char** argv) {
     Model M1(data);
     WarehouseSolution sol = M1.solve();
     sol.print();
+    string fsol = "../solutions/toy.txt";
+    sol.write(fsol);
+
+    return 0;
 }

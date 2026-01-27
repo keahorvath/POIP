@@ -15,6 +15,6 @@ void WarehouseSolution::write(string& filename) {
 
 void WarehouseSolution::print() {
     for (int j = 0; j < data.num_products; j++) {
-        cout << "Product " << assignment[j] << " : Rack " << j << endl;
+        cout << "Product " << j << " : Rack " << assignment[j] << endl;
     }
 }

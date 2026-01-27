@@ -56,7 +56,7 @@ WarehouseSolution Model::solve() {
         for (int i = 1; i < data.num_racks - 1; i++) {
             lhs += x[i][j];
         }
-        model.addConstr(lhs == 1);
+        model.addConstr(lhs == 1, "assignment_" + to_string(j));
     }
 
     // Capacité des racks
@@ -65,7 +65,7 @@ WarehouseSolution Model::solve() {
         for (int j = 0; j < data.num_products; j++) {
             lhs += x[i][j];
         }
-        model.addConstr(lhs <= data.rack_capacity[i]);
+        model.addConstr(lhs <= data.rack_capacity[i], "capacity_" + to_string(i));
     }
 
     // Aération
@@ -81,15 +81,13 @@ WarehouseSolution Model::solve() {
             lhsR += data.rack_capacity[i] * data.aeration_rate;
         }
         lhsR = (lhsR-1)/100 + 1;
-        model.addConstr(lhsL >= lhsR);
+        model.addConstr(lhsL >= lhsR, "aeration_" + to_string(k));
     }
 
     // Une famille avant l'autre
     for (int f = 0; f < data.num_circuits; f++) {
-        for (int g = 0; g < data.num_circuits; g++) {
-            if (f != g) {
-                model.addConstr(y[f][g] + y[g][f] == 1);
-            }
+        for (int g = f + 1; g < data.num_circuits; g++) {
+            model.addConstr(y[f][g] + y[g][f] == 1, "circuits_a_" + to_string(f) + "_" + to_string(g));
         }
     }
 
@@ -99,7 +97,7 @@ WarehouseSolution Model::solve() {
             if (f != g) {
                 for (int h = 0; h < data.num_circuits; h++) {
                     if (h != f && h != g) {
-                        model.addConstr(y[f][g] + y[g][h] - 1 <= y[f][h]);
+                        model.addConstr(y[f][g] + y[g][h] - 1 <= y[f][h], "circuits_b_" + to_string(f) + "_" + to_string(g) + "_" + to_string(h));
                     }
                 }
             }
@@ -111,12 +109,12 @@ WarehouseSolution Model::solve() {
         for (int g = 0; g < data.num_circuits; g++) {
             if (f != g) {
                 for (int j = 0; j < data.num_products; j++) {
-                    if (data.product_circuit[j] = f) {
+                    if (data.product_circuit[j] == f) {
                         for (int jj = 0; jj < data.num_products; jj++) {
-                            if (data.product_circuit[jj] = g) {
+                            if (data.product_circuit[jj] == g) {
                                 for (int i = 1; i < data.num_racks - 1; i++) {
                                     for (int ii = 1; ii < i; ii++) {
-                                        model.addConstr(2 - y[f][g] - x[i][j] >= x[ii][jj]);
+                                        model.addConstr(2 - y[f][g] - x[i][j] >= x[ii][jj], "circuits_c");
                                     }
                                 }
                             }
@@ -129,13 +127,13 @@ WarehouseSolution Model::solve() {
 
     // La commande passe par les racks contenant ses produits
     for (int c = 0; c < data.num_orders; c++) {
-        for (int ii = 1; ii < data.num_racks - 1; ii++) {
-            for (int j : data.orders[c]) {
+        for (int j : data.orders[c]) {
+            for (int ii = 1; ii < data.num_racks - 1; ii++) {
                 GRBLinExpr lhs = 0;
                 for (int i = 0; i < ii; i++) {
                     lhs += z[c][i][ii];
                 }
-                model.addConstr(lhs >= x[ii][j]);
+                model.addConstr(lhs >= x[ii][j], "order_" + to_string(c));
             }
         }
     }
