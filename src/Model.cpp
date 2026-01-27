@@ -13,7 +13,7 @@ Modele::Modele(const WarehouseInstance &Data) : data(Data) {
 void Modele::solve(){
 
     GRBEnv env(true);
-    env.set(GRB_IntParam_OutputFlag, 0);
+    //env.set(GRB_IntParam_OutputFlag, 0);
     env.start();
 
     GRBModel model(env);
@@ -22,11 +22,11 @@ void Modele::solve(){
     /////// Variables /////////
     ///////////////////////////
 
-    // Variables Xik
+    // Variables Xij
     vector<vector<GRBVar>> x(data.num_racks, vector<GRBVar> (data.num_products));
     for (int i=1; i<data.num_racks-1; i++){
         for (int j=0; j<data.num_products; j++){
-            x[i][j] = model.addVar(0.0, 1.0, 0.0, GRB_BINARY);
+            x[i][j] = model.addVar(0.0, 1.0, 0.0, GRB_BINARY, "x_" + to_string(i) + "_" + to_string(j));
         }
     }
 
@@ -35,7 +35,7 @@ void Modele::solve(){
     for (int f=0; f<data.num_circuits; f++){
         for (int g=0; g<data.num_circuits; g++){
             if (f!=g){
-                y[f][g] = model.addVar(0.0, 1.0, 0.0, GRB_BINARY);
+                y[f][g] = model.addVar(0.0, 1.0, 0.0, GRB_BINARY, "y_" + to_string(f) + "_" + to_string(g));
             }
         }
     }
@@ -45,7 +45,7 @@ void Modele::solve(){
     for (int c=0; c<data.num_orders; c++){
         for (int i=0; i<data.num_racks; i++){
             for (int j=i+1; j<data.num_racks; j++){
-                z[c][i][j] = model.addVar(0.0, 1.0, data.adjacency[i][j], GRB_BINARY);
+                z[c][i][j] = model.addVar(0.0, 1.0, data.adjacency[i][j], GRB_BINARY, "z_" + to_string(c) + "_" + to_string(i) + "_" + to_string(j));
             }
         }
     }
@@ -88,7 +88,7 @@ void Modele::solve(){
             lhsR += data.rack_capacity[i] * data.aeration_rate;
         }
         lhsR = (lhsR-1)/100 + 1;
-        model.addConstr(lhsL <= lhsR);
+        model.addConstr(lhsL >= lhsR);
     }
 
     // Une famille avant l'autre
@@ -176,7 +176,7 @@ void Modele::solve(){
             model.addConstr(lhs == 0);
         }
     }
-
+    
     model.optimize();
 
     // Récupération de la solution
@@ -204,6 +204,6 @@ void Modele::write_sol(string& filename){
 
 void Modele::print_sol(){
     for (int j=0; j<data.num_products; j++){
-        cout << "Produit " << assignment[j] << " : Rack " << j << endl;
+        cout << "Produit " << j << " : Rack " << assignment[j] << endl;
     }
 }
