@@ -1,27 +1,28 @@
 #pragma once
 
-#include "WarehouseInstance.hpp"
-
+#include <fstream>
 #include <iostream>
 #include <string>
-#include <fstream>
-#include <string>
 
-class Modele {
+#include "WarehouseInstance.hpp"
+#include "WarehouseSolution.hpp"
 
-    public :
+/**
+ * @class Model
+ * @brief MIP Model to solve the warehouse problem
+ */
+class Model {
+   public:
+    /**
+     * @brief Class constructor
+     */
+    Model(const WarehouseInstance& Data);
 
-        Modele(const WarehouseInstance &Data);
+    /**
+     * @brief Solve the instance
+     */
+    WarehouseSolution solve();
 
-        void solve ();
-
-        void write_sol(std::string &filename);
-
-        void print_sol();
-
-    private :
-
-        WarehouseInstance data;
-
-        std::vector<int> assignment;
+   private:
+    const WarehouseInstance data;
 };
