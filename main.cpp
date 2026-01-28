@@ -1,8 +1,7 @@
-#include <vector>
-
-#include "Model.hpp"
 #include "WarehouseInstance.hpp"
 #include "WarehouseLoader.hpp"
+#include "Model.hpp"
+#include "Heur_1.hpp"
 
 using namespace std;
 
@@ -11,11 +10,7 @@ int main(int argc, char** argv) {
     WarehouseLoader loader("../warehouse_toy");
     WarehouseInstance data = loader.loadAll();
 
-    Model M1(data);
-    WarehouseSolution sol = M1.solve();
-    sol.print();
-    string fsol = "../solutions/toy.txt";
-    sol.write(fsol);
+    WarehouseSolution sol = Heur_1 (data, 15);
 
     return 0;
 }

@@ -11,13 +11,13 @@
  * @struct WarehouseSolution
  */
 struct WarehouseSolution {
-    const WarehouseInstance data;
+    WarehouseInstance data;
     std::vector<int> assignment;
 
     /**
      * @brief Solution constructor
      */
-    WarehouseSolution(const WarehouseInstance data, std::vector<int> assignment);
+    WarehouseSolution(const WarehouseInstance& data_, const std::vector<int>& assignment_);
 
     /**
      * @brief Writes the solution in the given file in the correct format
