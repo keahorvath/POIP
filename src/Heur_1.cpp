@@ -1,4 +1,5 @@
 #include "Heur_1.hpp"
+#include <cmath>
 
 using namespace std;
 
@@ -32,7 +33,66 @@ int calculate_cost(const WarehouseSolution& solution) {
     return total;
 }
 
-WarehouseSolution Glouton (const WarehouseInstance& data, vector<vector<int>>& current_sequence){}
+// Returns the number of free locations in each aisle (= aisle capacity * aeration percentage)
+vector<int> Num_free_loc (const WarehouseInstance& data) {
+    vector<int> num_free_loc(0, data.num_aisles);
+    for (int i = 0; i < data.num_aisles; i++) {
+        for (int j = 0; j < data.aisles_racks[i].size(); j++) {
+            num_free_loc[i] += data.rack_capacity[data.aisles_racks[i][j]];
+        }
+        num_free_loc[i] = ceil(num_free_loc[i]*data.aeration_rate/100.);
+    }
+    return num_free_loc;
+}
+
+// Update the capacities of the racks according to the aeration which is arbitrairy at the end of each aisle
+vector<int> New_rack_capacity (const WarehouseInstance& data) {
+    vector<int> num_free_loc = Num_free_loc(data);
+    vector<int> new_rack_capacitiy = data.rack_capacity;
+    vector<int> num_racksPerAisle (data.num_aisles);
+    for (int i = 0; i < data.num_aisles; i++) {
+        num_racksPerAisle[i] = data.aisles_racks[i].size();
+    }
+    for (int i = 0; i < data.num_aisles; i++) {
+        int k=1;
+        while (num_free_loc[i] > data.rack_capacity[data.aisles_racks[i][num_racksPerAisle[i]-k]]) {
+            new_rack_capacitiy[data.aisles_racks[i][num_racksPerAisle[i]-k]] = 0;
+            num_free_loc[i] -= data.rack_capacity[data.aisles_racks[i][num_racksPerAisle[i]-k]];
+            k++;
+        }
+        new_rack_capacitiy[data.aisles_racks[i][num_racksPerAisle[i]-k]] -= num_free_loc[i];
+    }
+    return new_rack_capacitiy;
+}
+
+WarehouseSolution Glouton (const WarehouseInstance& data, vector<vector<int>>& current_sequence){
+    vector<int> num_free_loc = Num_free_loc(data);
+    vector<int> new_rack_capacitiy = New_rack_capacity(data);
+
+for (int i=0 ; i<data.num_racks ; i++) {
+    cout << i << " : " << new_rack_capacitiy[i] << endl;
+}
+
+    // The products are placed in order
+    vector<int> assignment (0, data.num_products);
+    int current_rack = 1; int current_product;
+    for (int current_circuit = 0; current_circuit < current_sequence.size(); current_circuit++) {
+        for (int i = 0; i < current_sequence[current_circuit].size(); i++) {
+            current_product = current_sequence[current_circuit][i];
+            while(assignment[current_product] = 0) {
+                if(new_rack_capacitiy[current_rack] > 0) {
+                    assignment[current_product] = current_rack;
+                    new_rack_capacitiy[current_rack] -= 1;
+                }
+                else {
+                    current_rack += 1;
+                }
+            }
+        }
+    }
+
+    return WarehouseSolution(data, assignment);
+}
 
 void swap (int& a, int& b) {
     int tmp = a;

@@ -9,6 +9,10 @@ using namespace std;
 
 int calculate_cost(WarehouseSolution& solution);
 
+vector<int> Num_free_loc (const WarehouseInstance& data);
+
+vector<int> New_rack_capacity (const WarehouseInstance& data);
+
 WarehouseSolution Glouton (const WarehouseInstance& data, vector<vector<int>>& current_sequence);
 
 
