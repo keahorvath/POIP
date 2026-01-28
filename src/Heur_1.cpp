@@ -32,4 +32,6 @@ int calculate_cost(const WarehouseSolution& solution) {
     return total;
 }
 
+WarehouseSolution Glouton (vector<vector<int>>& current_sequence){}
 
+WarehouseSolution Heur_1 (const WarehouseInstance& data){}
