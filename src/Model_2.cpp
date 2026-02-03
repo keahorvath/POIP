@@ -33,11 +33,11 @@ void Model2::calcul_racks_circuits() {
     int rack = 0;
     
     for (int f = 0; f < data.num_circuits; f++) {
-        racks_circuits[f].resize(2);
+        racks_circuits[circuit_sequence[f]].resize(2);
         while (new_rack_capacity[rack] < 1) rack++;
-        racks_circuits[f][0] = rack;
+        racks_circuits[circuit_sequence[f]][0] = rack;
 
-        int nProducts = circuits[f].size();
+        int nProducts = circuits[circuit_sequence[f]].size();
         while (nProducts > 0) {
             if (nProducts <= new_rack_capacity[rack]) {
                 new_rack_capacity[rack] -= nProducts;
@@ -47,12 +47,12 @@ void Model2::calcul_racks_circuits() {
                 rack++;
             }
         }
-        racks_circuits[f][1] = rack;
+        racks_circuits[circuit_sequence[f]][1] = rack;
 
     }
 }
 
-Model2::Model2(const WarehouseInstance& Data, int Num_orders, vector<int> Racks_sequence) : Model(Data), num_orders(Num_orders) {
+Model2::Model2(const WarehouseInstance& Data, int Num_orders, vector<int> Circuit_sequence) : Model(Data), num_orders(Num_orders), circuit_sequence(Circuit_sequence) {
     circuits.resize(data.num_circuits);
     for (int j = 0; j < data.num_products; j++){
         circuits[data.product_circuit[j]].push_back(j);
@@ -81,6 +81,12 @@ void Model2::print_circuits() {
             cout << j << ", ";
         }
         cout << endl;
+    }
+}
+
+void Model2::print_racks_circuits() {
+    for (int c = 0; c < data.num_circuits; c++) {
+        cout << "Circuit " << c << " : " << racks_circuits[c][0] << " à " << racks_circuits[c][1] << endl;
     }
 }
 
@@ -140,6 +146,7 @@ cout << "Creating constraints 2" << endl;
     }
 cout << "Creating constraints 3" << endl;
     // Capacité des racks
+    vector<int> new_rack_capacity = New_rack_capacity(data);
     for (int i = 1; i < data.num_racks - 1; i++) {
         GRBLinExpr lhs = 0;
         for (int j = 0; j < data.num_products; j++) {
@@ -147,7 +154,7 @@ cout << "Creating constraints 3" << endl;
         i <= racks_circuits[data.product_circuit[j]][1])
             lhs += x[i][j];
         }
-        model.addConstr(lhs <= data.rack_capacity[i], "capacity_" + to_string(i));
+        model.addConstr(lhs <= new_rack_capacity[i], "capacity_" + to_string(i));
     }
 /*cout << "Creating constraints 4" << endl;
     // Aération
