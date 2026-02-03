@@ -5,10 +5,72 @@
 
 using namespace std;
 
-Model2::Model2(const WarehouseInstance& Data) : Model(Data) {
+void Model2::choose_orders(int seed = 0) {
+
+    random_device rd;
+    mt19937 gen(rd());
+    uniform_int_distribution<> dist(0, data.num_orders - 1);
+
+    unordered_set<int> indices;
+    indices.reserve(num_orders);
+
+    while (indices.size() < num_orders) {
+        indices.insert(dist(gen));
+    }
+
+    for (int c : indices) {
+        cout << "Order " << c << endl;
+        orders.push_back(data.orders[c]);
+    }
+}
+
+void Model2::calcul_racks_circuits() {
+    
+    vector<int> new_rack_capacity = New_rack_capacity(data);
+
+    racks_circuits.resize(data.num_circuits);
+
+    int rack = 0;
+    
+    for (int f = 0; f < data.num_circuits; f++) {
+        racks_circuits[f].resize(2);
+        while (new_rack_capacity[rack] < 1) rack++;
+        racks_circuits[f][0] = rack;
+
+        int nProducts = circuits[f].size();
+        while (nProducts > 0) {
+            if (nProducts <= new_rack_capacity[rack]) {
+                new_rack_capacity[rack] -= nProducts;
+                nProducts = 0;
+            } else {
+                nProducts -= new_rack_capacity[rack];
+                rack++;
+            }
+        }
+        racks_circuits[f][1] = rack;
+
+    }
+}
+
+Model2::Model2(const WarehouseInstance& Data, int Num_orders, vector<int> Racks_sequence) : Model(Data), num_orders(Num_orders) {
     circuits.resize(data.num_circuits);
     for (int j = 0; j < data.num_products; j++){
         circuits[data.product_circuit[j]].push_back(j);
+    }
+
+    choose_orders();
+    calcul_racks_circuits();
+
+    for (int c = 0; c < num_orders; c++) {
+        cout << "Order " << c << " : ";
+        for (int j : orders[c]) {
+            cout << j << ", ";
+        }
+        cout << endl;
+    }
+    
+    for (int f = 0; f < data.num_circuits; f++) {
+        cout << "Circuit " << f << ", start rack : " << racks_circuits[f][0] << ", end rack : " << racks_circuits[f][1] << endl;
     }
 }
 
@@ -22,6 +84,7 @@ void Model2::print_circuits() {
     }
 }
 
+
 WarehouseSolution Model2::solve2() {
     GRBEnv env(true);
     //env.set(GRB_IntParam_OutputFlag, 0);
@@ -32,11 +95,12 @@ WarehouseSolution Model2::solve2() {
     ///////////////////////////
     /////// Variables /////////
     ///////////////////////////
-
+cout << "Creating variables x" << endl;
     // Variables Xij
     vector<vector<GRBVar>> x(data.num_racks, vector<GRBVar> (data.num_products));
-    for (int i=1; i<data.num_racks-1; i++){
-        for (int j=0; j<data.num_products; j++){
+    for (int j = 0; j < data.num_products; j++){
+        for (int i = racks_circuits[data.product_circuit[j]][0];
+        i < racks_circuits[data.product_circuit[j]][1] + 1; i++){
             x[i][j] = model.addVar(0.0, 1.0, 0.0, GRB_BINARY, "x_" + to_string(i) + "_" + to_string(j));
         }
     }
@@ -50,12 +114,12 @@ WarehouseSolution Model2::solve2() {
             }
         }
     }*/
-
+cout << "Creating variables z" << endl;
     // Variables Zcii'
-    vector<vector<vector<GRBVar>>> z(5, vector<vector<GRBVar>> (data.num_racks, vector<GRBVar> (data.num_racks)));
-    for (int c=0; c<5; c++){
-        for (int i=0; i<data.num_racks; i++){
-            for (int j=i+1; j<data.num_racks; j++){
+    vector<vector<vector<GRBVar>>> z(num_orders, vector<vector<GRBVar>> (data.num_racks, vector<GRBVar> (data.num_racks)));
+    for (int c = 0; c < num_orders; c++){
+        for (int i = 0; i < data.num_racks; i++){
+            for (int j = i + 1; j < data.num_racks; j++){
                 z[c][i][j] = model.addVar(0.0, 1.0, data.adjacency[i][j], GRB_BINARY, "z_" + to_string(c) + "_" + to_string(i) + "_" + to_string(j));
             }
         }
@@ -64,25 +128,28 @@ WarehouseSolution Model2::solve2() {
     ///////////////////////////
     ////// Contraintes ////////
     ///////////////////////////
-
+cout << "Creating constraints 2" << endl;
     // Chaque objet assigné à un rack
     for (int j = 0; j < data.num_products; j++) {
         GRBLinExpr lhs = 0;
-        for (int i = 1; i < data.num_racks - 1; i++) {
+        for (int i = racks_circuits[data.product_circuit[j]][0];
+        i < racks_circuits[data.product_circuit[j]][1] + 1; i++) {
             lhs += x[i][j];
         }
         model.addConstr(lhs == 1, "assignment_" + to_string(j));
     }
-
+cout << "Creating constraints 3" << endl;
     // Capacité des racks
     for (int i = 1; i < data.num_racks - 1; i++) {
         GRBLinExpr lhs = 0;
         for (int j = 0; j < data.num_products; j++) {
+            if (i >= racks_circuits[data.product_circuit[j]][0] &&
+        i <= racks_circuits[data.product_circuit[j]][1])
             lhs += x[i][j];
         }
         model.addConstr(lhs <= data.rack_capacity[i], "capacity_" + to_string(i));
     }
-
+/*cout << "Creating constraints 4" << endl;
     // Aération
     for (int k = 0; k < data.num_aisles; k++) {
         GRBLinExpr lhsL = 0;
@@ -97,7 +164,7 @@ WarehouseSolution Model2::solve2() {
         }
         lhsR = (lhsR-1)/100 + 1;
         model.addConstr(lhsL >= lhsR, "aeration_" + to_string(k));
-    }
+    }*/
 
     // Une famille avant l'autre
     /*for (int f = 0; f < data.num_circuits; f++) {
@@ -140,52 +207,41 @@ WarehouseSolution Model2::solve2() {
         }
     }*/
 
-    for (int f = 0; f < data.num_circuits - 1; f++) {
-        for (int g = f + 1; g < data.num_circuits; g++) {
-            for (int j : circuits[f]) {
-                for (int jj : circuits[g]) {
-                    for (int i = 1; i < data.num_racks; i++) {
-                        for (int ii = 0; ii < i; ii++) {
-                            model.addConstr(x[ii][jj] <= 1 - x[i][j], "circuits_c");
-                        }
-                    }
-                }
-            }
-        }
-    }
+    
 
-
+cout << "Creating constraints 8" << endl;
     // La commande passe par les racks contenant ses produits
-    for (int c = 0; c < 5; c++) {
-        for (int j : data.orders[c]) {
-            for (int ii = 1; ii < data.num_racks - 1; ii++) {
+    for (int c = 0; c < num_orders; c++) {
+        for (int j : orders[c]) {
+            for (int i = racks_circuits[data.product_circuit[j]][0];
+        i < racks_circuits[data.product_circuit[j]][1] + 1; i++) {
                 GRBLinExpr lhs = 0;
-                for (int i = 0; i < ii; i++) {
-                    lhs += z[c][i][ii];
+                for (int ii = 0; ii < i; ii++) {
+                    lhs += z[c][ii][i];
                 }
-                model.addConstr(lhs >= x[ii][j], "order_" + to_string(c));
+                model.addConstr(lhs >= x[i][j], "order_" + to_string(c));
             }
         }
     }
-
+cout << "Creating constraints 10" << endl;
     // Contraintes de flot
-    for (int c = 0; c < 5; c++) {
+    for (int c = 0; c < num_orders; c++) {
         GRBLinExpr lhs = 0;
         for (int i = 1; i < data.num_racks - 1; i++) {
             lhs += z[c][0][i];
         }
         model.addConstr(lhs == 1);
     }
-
-    for (int c = 0; c < 5; c++) {
+cout << "Creating constraints 11" << endl;
+    for (int c = 0; c < num_orders; c++) {
         GRBLinExpr lhs = 0;
         for (int i = 1; i < data.num_racks - 1; i++) {
             lhs += z[c][i][data.num_racks - 1];
         }
         model.addConstr(lhs == 1);
     }
-
-    for (int c = 0; c < 5; c++) {
+cout << "Creating constraints 9" << endl;
+    for (int c = 0; c < num_orders; c++) {
         for (int ii = 1; ii < data.num_racks - 1; ii++) {
             GRBLinExpr lhs = 0;
             for (int i = 0; i < ii; i++) {
@@ -203,7 +259,8 @@ WarehouseSolution Model2::solve2() {
     // Récupération de la solution
     vector<int> assignment(data.num_products, 0);
     for (int j = 0; j < data.num_products; j++) {
-        for (int i = 1; i < data.num_racks - 1; i++) {
+        for (int i = racks_circuits[data.product_circuit[j]][0];
+        i < racks_circuits[data.product_circuit[j]][1] + 1; i++) {
             if (x[i][j].get(GRB_DoubleAttr_X) > 0.5) {
                 assignment[j] = i;
                 break;

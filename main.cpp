@@ -45,9 +45,15 @@ int main(int argc, char** argv) {
     */
 
     // TEST MODELE 2
-    Model2 M(data);
-    M.print_circuits();
-    M.solve2();
+    Model M1(data);
+    Model2 M2(data, 5);
+    
+    //WarehouseSolution sol1 = M1.solve();
+    WarehouseSolution sol2 = M2.solve2();
+
+
+    //cout << "Cost M1: " << calculate_cost(sol1) << endl;
+    cout << "Cost M2: " << calculate_cost(sol2) << endl;
     
     return 0;
 }

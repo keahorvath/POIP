@@ -1,6 +1,10 @@
 #pragma once
 
 #include "Model.hpp"
+#include "Heur_1.hpp"
+
+#include <unordered_set>
+#include <random>
 
 /**
  * @class Model
@@ -9,13 +13,11 @@
 class Model2 : public Model {
    public:
 
-   //std::vector<std::vector<int>> circuits;
-
    void print_circuits ();
     /**
      * @brief Class constructor
      */
-    Model2 (const WarehouseInstance& Data);
+    Model2 (const WarehouseInstance& Data, int Num_orders, vector<int> Racks_sequence);
 
     /**
      * @brief Solve the instance
@@ -23,6 +25,13 @@ class Model2 : public Model {
     WarehouseSolution solve2();
 
    private:
-    //const WarehouseInstance data;
+    
     std::vector<std::vector<int>> circuits;
+    int num_orders;
+    std::vector<std::vector<int>> orders;
+    std::vector<int> circuit_sequence;
+    std::vector<std::vector<int>> racks_circuits;
+
+    void choose_orders(int seed);
+    void calcul_racks_circuits();
 };

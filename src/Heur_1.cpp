@@ -48,7 +48,7 @@ vector<int> Num_free_loc (const WarehouseInstance& data) {
 // Update the capacities of the racks according to the aeration which is arbitrairy at the end of each aisle
 vector<int> New_rack_capacity (const WarehouseInstance& data) {
     vector<int> num_free_loc = Num_free_loc(data);
-    vector<int> new_rack_capacitiy = data.rack_capacity;
+    vector<int> new_rack_capacity = data.rack_capacity;
     vector<int> num_racksPerAisle (data.num_aisles);
     for (int i = 0; i < data.num_aisles; i++) {
         num_racksPerAisle[i] = data.aisles_racks[i].size();
@@ -56,17 +56,17 @@ vector<int> New_rack_capacity (const WarehouseInstance& data) {
     for (int i = 0; i < data.num_aisles; i++) {
         int k=1;
         while (num_free_loc[i] > data.rack_capacity[data.aisles_racks[i][num_racksPerAisle[i]-k]]) {
-            new_rack_capacitiy[data.aisles_racks[i][num_racksPerAisle[i]-k]] = 0;
+            new_rack_capacity[data.aisles_racks[i][num_racksPerAisle[i]-k]] = 0;
             num_free_loc[i] -= data.rack_capacity[data.aisles_racks[i][num_racksPerAisle[i]-k]];
             k++;
         }
-        new_rack_capacitiy[data.aisles_racks[i][num_racksPerAisle[i]-k]] -= num_free_loc[i];
+        new_rack_capacity[data.aisles_racks[i][num_racksPerAisle[i]-k]] -= num_free_loc[i];
     }
-    return new_rack_capacitiy;
+    return new_rack_capacity;
 }
 
 WarehouseSolution Glouton (const WarehouseInstance& data, vector<vector<int>>& current_sequence){
-    vector<int> new_rack_capacitiy = New_rack_capacity(data);
+    vector<int> new_rack_capacity = New_rack_capacity(data);
     // The products are placed in order
     vector<int> assignment (data.num_products, 0);
     int current_rack = 1; int current_product;
@@ -75,9 +75,9 @@ WarehouseSolution Glouton (const WarehouseInstance& data, vector<vector<int>>& c
             current_product = current_sequence[current_circuit][i];
             //cout << current_product << " pipi" << endl;
             while(assignment[current_product] == 0) {
-                if(new_rack_capacitiy[current_rack] > 0) {
+                if(new_rack_capacity[current_rack] > 0) {
                     assignment[current_product] = current_rack;
-                    new_rack_capacitiy[current_rack] -= 1;
+                    new_rack_capacity[current_rack] -= 1;
                 }
                 else {
                     current_rack += 1;
