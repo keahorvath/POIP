@@ -23,6 +23,6 @@ class Model {
      */
     WarehouseSolution solve();
 
-   private:
+   protected:
     const WarehouseInstance data;
 };
