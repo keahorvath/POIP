@@ -23,4 +23,4 @@ def main(warehouse_dir):
 
 
 if __name__ == "__main__":
-    main(os.path.join(ROOT_DIR, "warehouses", "warehouse_big_market"))
+    main(os.path.join(ROOT_DIR, "warehouses", "warehouse_big_category"))

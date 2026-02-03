@@ -56,7 +56,7 @@ vector<int> WarehouseLoader::loadProductCircuits() {
     for (int i = 0; i < nb_prod; i++) {
         int val;
         file >> val;
-        prod_circuits.push_back(val-1);
+        prod_circuits.push_back(val);
     }
     return prod_circuits;
 }
