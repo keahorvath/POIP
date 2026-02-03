@@ -17,7 +17,7 @@ class Model2 : public Model {
     /**
      * @brief Class constructor
      */
-    Model2 (const WarehouseInstance& Data, int Num_orders, vector<int> Racks_sequence);
+    Model2 (const WarehouseInstance& Data, int Num_orders);
 
     /**
      * @brief Solve the instance
@@ -34,4 +34,5 @@ class Model2 : public Model {
 
     void choose_orders(int seed);
     void calcul_racks_circuits();
+    vector<int> assignment_real();
 };

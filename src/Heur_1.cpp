@@ -73,7 +73,6 @@ WarehouseSolution Glouton (const WarehouseInstance& data, vector<vector<int>>& c
     for (int current_circuit = 0; current_circuit < current_sequence.size(); current_circuit++) {
         for (int i = 0; i < current_sequence[current_circuit].size(); i++) {
             current_product = current_sequence[current_circuit][i];
-            //cout << current_product << " pipi" << endl;
             while(assignment[current_product] == 0) {
                 if(new_rack_capacity[current_rack] > 0) {
                     assignment[current_product] = current_rack;
