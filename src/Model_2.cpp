@@ -8,7 +8,7 @@ using namespace std;
 void Model2::choose_orders(int seed = 0) {
 
     random_device rd;
-    mt19937 gen(rd());
+    mt19937 gen(42);
     uniform_int_distribution<> dist(0, data.num_orders - 1);
 
     unordered_set<int> indices;
