@@ -8,7 +8,7 @@ using namespace std;
 void Model2::choose_orders(int seed = 0) {
 
     random_device rd;
-    mt19937 gen(rd());
+    mt19937 gen(seed);
     uniform_int_distribution<> dist(0, data.num_orders - 1);
 
     unordered_set<int> indices;
@@ -78,7 +78,7 @@ vector<int> Model2::assignment_real() {
     // The products are placed in order
     vector<int> assignment (data.num_products, 0);
     int current_rack = 1;
-    for (int current_circuit = 0; current_circuit < data.num_circuits; current_circuit++/*: circuit_sequence*/) {
+    for (int current_circuit : circuit_sequence) {
         for (int j : circuits[current_circuit]) {
             
             while (new_rack_capacity[current_rack] == 0) current_rack++;
@@ -108,8 +108,9 @@ WarehouseSolution Model2::solve2() {
     ///////////////////////////
     /////// Variables /////////
     ///////////////////////////
-cout << "Creating variables x" << endl;
+
     // Variables Xij
+    cout << "Creating variables x" << endl;
     vector<vector<GRBVar>> x(data.num_racks, vector<GRBVar> (data.num_products));
     for (int j = 0; j < data.num_products; j++){
         for (int i = racks_circuits[data.product_circuit[j]][0];
@@ -119,8 +120,8 @@ cout << "Creating variables x" << endl;
     }
 
     
+    // Variables Zcii
     cout << "Creating variables z" << endl;
-    // Variables Zcii'
     vector<vector<vector<GRBVar>>> z(num_orders, vector<vector<GRBVar>> (data.num_racks, vector<GRBVar> (data.num_racks)));
     for (int c = 0; c < num_orders; c++){
         for (int i = 0; i < data.num_racks; i++){
@@ -134,8 +135,9 @@ cout << "Creating variables x" << endl;
     ///////////////////////////
     ////// Contraintes ////////
     ///////////////////////////
-    cout << "Creating constraints 2" << endl;
+
     // Chaque objet assigné à un rack
+    cout << "Creating constraints 2" << endl;
     for (int j = 0; j < data.num_products; j++) {
         GRBLinExpr lhs = 0;
         for (int i = racks_circuits[data.product_circuit[j]][0];
@@ -145,8 +147,8 @@ cout << "Creating variables x" << endl;
         model.addConstr(lhs == 1, "assignment_" + to_string(j));
     }
 
-    cout << "Creating constraints 3" << endl;
     // Capacité des racks
+    cout << "Creating constraints 3" << endl;
     vector<int> new_rack_capacity = New_rack_capacity(data);
     for (int i = 1; i < data.num_racks - 1; i++) {
         GRBLinExpr lhs = 0;
@@ -158,8 +160,8 @@ cout << "Creating variables x" << endl;
         model.addConstr(lhs <= new_rack_capacity[i], "capacity_" + to_string(i));
     }
 
-    cout << "Creating constraints 8" << endl;
     // La commande passe par les racks contenant ses produits
+    cout << "Creating constraints 8" << endl;
     for (int c = 0; c < num_orders; c++) {
         for (int j : orders[c]) {
             for (int i = racks_circuits[data.product_circuit[j]][0];
@@ -173,8 +175,8 @@ cout << "Creating variables x" << endl;
         }
     }
 
-    cout << "Creating constraints 10" << endl;
     // Contraintes de flot
+    cout << "Creating constraints 10" << endl;
     for (int c = 0; c < num_orders; c++) {vector<int> new_rack_capacity = New_rack_capacity(data);
         GRBLinExpr lhs = 0;
         for (int i = 1; i < data.num_racks - 1; i++) {

@@ -45,8 +45,13 @@ int main(int argc, char** argv) {
     */
 
     // TEST MODELE 2
-    Model M1(data);
-    Model2 M2(data, 5);
+    
+    
+    vector<int> circuit_sequence (data.num_circuits);
+    for (int f = 0; f < data.num_circuits; f++) {
+        circuit_sequence[f] = f;
+    }
+    Model2 M2(data, 5, circuit_sequence);
     
     //WarehouseSolution sol1 = M1.solve();
     WarehouseSolution sol2 = M2.solve2();
