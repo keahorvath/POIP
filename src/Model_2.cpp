@@ -1,8 +1,6 @@
 
 #include "Model_2.hpp"
 
-#include "gurobi_c++.h"
-
 using namespace std;
 
 void Model2::choose_orders(int seed = 0) {
@@ -73,23 +71,42 @@ void Model2::print_circuits() {
     }
 }
 
-vector<int> Model2::assignment_real() {
+void Model2::assignment_real(vector<vector<GRBVar>>& x, vector<vector<vector<GRBVar>>>& z) {
     vector<int> new_rack_capacity = New_rack_capacity(data);
     // The products are placed in order
     vector<int> assignment (data.num_products, 0);
     int current_rack = 1;
-    for (int current_circuit : circuit_sequence) {
+    for (int current_circuit : circuit_sequence) { // Setting variables Xij
         for (int j : circuits[current_circuit]) {
             
             while (new_rack_capacity[current_rack] == 0) current_rack++;
             
             assignment[j] = current_rack;
+            x[current_rack][j].set(GRB_DoubleAttr_Start, 1.0);
             new_rack_capacity[current_rack]--;
             
         }
     }
-    return assignment;
+    
+
+    for (int c = 0; c < num_orders; c++) {  // Setting variables Zcii'
+        set<int> racks;
+        for (int product : orders[c]) {
+            racks.insert(assignment[product]);
+        }
+        racks.insert(data.num_racks - 1);
+
+        current_rack = 0;
+        
+        for (int rack : racks) {
+            z[c][current_rack][rack].set(GRB_DoubleAttr_Start, 1.0);
+            current_rack = rack;
+        }
+    }
+    
 }
+
+
 
 void Model2::print_racks_circuits() {
     for (int c = 0; c < data.num_circuits; c++) {
@@ -208,15 +225,7 @@ WarehouseSolution Model2::solve2() {
         }
     }
     
-    /*vector<int> start_assignment = assignment_real();
-    for (int j : start_assignment) {
-        cout << j << endl;
-    }
-    for (int j = 0; j < data.num_products; j++) {
-    
-        x[start_assignment[j]][j].set(GRB_DoubleAttr_Start, 1.0);
-        
-    }*/
+    assignment_real(x, z);
     
     model.set(GRB_DoubleParam_TimeLimit, 1800);
     model.optimize();

@@ -2,8 +2,10 @@
 
 #include "Model.hpp"
 #include "Heur_1.hpp"
+#include "gurobi_c++.h"
 
 #include <unordered_set>
+#include <set>
 #include <random>
 
 /**
@@ -35,5 +37,5 @@ class Model2 : public Model {
 
     void choose_orders(int seed);
     void calcul_racks_circuits();
-    vector<int> assignment_real();
+    void assignment_real(vector<vector<GRBVar>>& x, vector<vector<vector<GRBVar>>>& z);
 };
