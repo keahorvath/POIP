@@ -17,5 +17,16 @@ int main(int argc, char** argv) {
     string fsol = "../solutions/toy.txt";
     sol.write(fsol);
 
+    Checker checker(data, "../solutions/toy.txt");
+    bool check = checker.check();
+    if (check) {
+        cout << "Solution is valid" << endl;
+        cout << "COST : " << checker.calculateCost() << endl;
+    } else {
+        cout << " Solution is not valid" << endl;
+    }
+    return 0;
     return 0;
 }
+
+
