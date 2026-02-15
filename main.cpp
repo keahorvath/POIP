@@ -18,11 +18,18 @@ int main(int argc, char** argv) {
     string fsol = "../solutions/toy.txt";
     sol.write(fsol);
 
+    // Heur_1
+    sol = Heur_1 (data, 3);
+    cout << "cost Heur_1  " << calculate_cost(sol) << endl;
+    string fsol = "warehouses/warehouse_big_category/solutions/rack_product_assignment_heur_1.txt";
+    sol.write(fsol);
+    
     // Heur_2
     vector<int> frequency_circuits = read_frequency_circuits("freq_circuit_toy_instance.txt", data.num_circuits)
     WarehouseSolution initial_sol(data, sol_initial);
     Heuristic_2 H2(initial_sol);
     H2.improve(5000, 1000);
+    cout << "cost Heur_2  " << calculate_cost(H2.solution) << endl;
     H2.solution.write("../solutions/rack_product_assignment);
         
     // Heur_3
@@ -33,7 +40,8 @@ int main(int argc, char** argv) {
     WarehouseSolution initial_sol(data, sol_initial);
     Heuristic_3 heuristic_3(initial_sol);
     heuristic_3.initial_solution3(frequency_circuits, freq_products, product_pairs, never_used);
-    string fsol = "../solutions/rack_product_assignment_heur_3.txt";
+    cout << "cost Heur_3  " << calculate_cost(heuristic_3.solution) << endl;
+    string fsol = "../solutions/rack_product_assignment.txt";
     heuristic_3.solution.write(fsol);
     
     Checker checker(data, "../solutions/toy.txt");
