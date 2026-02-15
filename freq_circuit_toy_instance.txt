@@ -1,0 +1,3 @@
+id_circuit nb_prod_in_family count pourcentage
+1 9 25 100.0
+0 6 24 96.0
