@@ -107,7 +107,9 @@ def calculate_cost(instance, rack_of_product):
 def checker(instance, solution_dir):
     """Execute toutes les verifications et affiche le resultat."""
     try:
-        path = os.path.join(solution_dir, "rack_product_assignment.txt")
+        #path = os.path.join(solution_dir, "rack_product_assignment.txt")
+        path = os.path.join(solution_dir, "rack_product_assignment_heur_3.txt")
+        #path = os.path.join(solution_dir, "rack_product_assignment_initial_solution.txt")
         rack_of_product = read_solution(path)
 
         check_all_products_assigned(instance, rack_of_product)
