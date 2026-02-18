@@ -1,5 +1,4 @@
 """Point d'entree : charge une instance et valide la solution."""
-
 import os
 
 from warehouse_loader import WarehouseLoader
@@ -9,6 +8,7 @@ from analyse_donnees import Analyse_donnees
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 ENABLE_WRITES = {
+    "basic_stats": True,
     "freq_prod": True,
     "freq_circuit": True,
     "concord_prod": True,
@@ -50,6 +50,11 @@ def run_analysis(instance, instance_name: str):
     out_dir = get_analyse_data_dir()
 
     # --- Écritures contrôlées ---
+    if ENABLE_WRITES["basic_stats"]:
+        basic_stats_file = build_out_path(out_dir, "basic_stats", instance_name)
+        print(f"Écriture de : stats basiques -> {basic_stats_file}")
+        analyse.write_basic_stats(basic_stats_file)
+
     if ENABLE_WRITES["freq_prod"]:
         freq_prod_file = build_out_path(out_dir, "freq_prod", instance_name)
         print(f"Écriture de : fréquences produits -> {freq_prod_file}")
@@ -70,8 +75,8 @@ def run_analysis(instance, instance_name: str):
         print(f"Écriture de : concordance circuits -> {concord_circuit_file}")
         analyse.write_concordance_circuit_to_file(analyse.mat_concordance_circuit, concord_circuit_file)
 
-    #print("Exécution de : print_stats")
-    #analyse.print_stats()
+    print("Exécution de : print_stats")
+    analyse.print_stats()
 
 def main(warehouse_dir, instance_name: str):
     loader = WarehouseLoader(warehouse_dir)
@@ -90,9 +95,9 @@ def main(warehouse_dir, instance_name: str):
 
 if __name__ == "__main__":
     #instance_name = "warehouse_toy"
-    instance_name = "warehouse_big_market"
+    #instance_name = "warehouse_big_market"
     #instance_name = "warehouse_big_category"
-    #instance_name = "warehouse_big_family"
+    instance_name = "warehouse_big_family"
 
     print(f"Lancement instance : {instance_name}")
     main(get_warehouse_dir(instance_name), instance_name)
