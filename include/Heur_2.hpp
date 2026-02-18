@@ -17,7 +17,7 @@ class Heuristic_2 {
         Heuristic_2();
         Heuristic_2(const WarehouseSolution& initial_solution);
 
-        void improve(const int max_attempts_per_circuit = 5000, const int stagnation_threshold = 5000);
+        void improve(const int max_attempt_per_circuit = 5000, const int stagnation_threshold = 5000);
 
         WarehouseSolution solution;
         long long solution_cost;
@@ -34,6 +34,7 @@ class Heuristic_2 {
         vector<pair<int, int>> circuit_intervals;
 };
 
+long long int factorial(int n, long long cap) ;
 vector<vector<int>> build_product_in_circuit(const WarehouseInstance& data);
 vector<int> read_frequency_circuits(string filename, int num_circuits);
 vector<int> new_rack_capacity(const WarehouseInstance& data);
