@@ -128,13 +128,13 @@ class Analyse_donnees :
         if compteur_family == 0:
             print("Aucun circuit n'est présent dans ", round(self.pourcentage_circuit,3), "% des commandes")
        
-        print("\nConcordance des circuits :")
-        for i in range(len(self.mat_concordance_circuit)-1):
-            if sum(self.mat_concordance_circuit[i]) > 0: # Vérifie qu'il y a des concordances pour ce circuit
-                print(f"\nCircuit {i} : ", end="")
-            for j in range(len(self.mat_concordance_circuit)):
-                if j > i and self.mat_concordance_circuit[i][j] > 0 :
-                    print(f"({j}):", round(self.mat_concordance_circuit[i][j]/self.instance.metadata['num_orders'] * 100,3), "%  ", end="")
+        # print("\nConcordance des circuits :")
+        # for i in range(len(self.mat_concordance_circuit)-1):
+        #     if sum(self.mat_concordance_circuit[i]) > 0: # Vérifie qu'il y a des concordances pour ce circuit
+        #         print(f"\nCircuit {i} : ", end="")
+        #     for j in range(len(self.mat_concordance_circuit)):
+        #         if j > i and self.mat_concordance_circuit[i][j] > 0 :
+        #             print(f"({j}):", round(self.mat_concordance_circuit[i][j]/self.instance.metadata['num_orders'] * 100,3), "%  ", end="")
 
     def get_aisle_capacity(self):
         """
@@ -231,3 +231,8 @@ class Analyse_donnees :
             for i in range(n):
                 line = " ".join(str(int(mat[i][j])) for j in range(n))
                 f.write(line + "\n")
+
+    def write_basic_stats(self, filename):
+        with open(filename, 'w') as f:
+            f.write(f"Max Min Moy Med \n")
+            f.write(f" {self.nb_max_prod} {self.nb_min_prod} {self.nb_moy_prod} {self.nb_med_prod}\n") #f.write(f" {self.nb_max_prod} ", self.nb_min_prod, " ", self.nb_moy_prod, " ", self.nb_med_prod)
