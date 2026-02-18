@@ -97,13 +97,15 @@ void Heuristic_2::calcul_cost_and_path() {
     }
 }
 
-void Heuristic_2::improve(const int max_attempts_per_circuit, const int stagnation_threshold) {
+void Heuristic_2::improve(const int max_attempt_per_circuit, const int stagnation_threshold) {
     /*
     Heuristique d'amélioration intra-circuit : recherche locale par échanges (swaps) de deux produits au sein de l'intervalle de racks de leur circuit.
     Seuls les coûts des commandes affectées sont recalculés pour évaluer le delta.
     */
-
+    int compt = 0;
     for (int c = 0; c < solution.data.num_circuits; c++) {
+        cout << compt << " " << endl;
+        compt++;
         if (circuit_products[c].empty() || circuit_products[c].size() < 2) continue;
 
         int min_r = circuit_intervals[c].first;
@@ -113,6 +115,10 @@ void Heuristic_2::improve(const int max_attempts_per_circuit, const int stagnati
         int attempts = 0;
         int stagnant = 0;
 
+        long long fact = factorial((int)circuit_products[c].size(), max_attempt_per_circuit);
+
+        int max_attempts_per_circuit = (int)std::min((long long)max_attempt_per_circuit, fact);
+        
         while (attempts < max_attempts_per_circuit && stagnant < stagnation_threshold) {
             attempts++;
             stagnant++;
@@ -212,6 +218,16 @@ void Heuristic_2::improve(const int max_attempts_per_circuit, const int stagnati
             }
         }
     }
+}
+
+long long int factorial(int n, long long cap) {
+    long long res = 1;
+    for (int i = 2; i <= n; i++) {
+        if (res > cap / i) return cap;
+        res *= i;
+        if (res >= cap) return cap;
+    }
+    return res;
 }
 
 vector<vector<int>> build_product_in_circuit(const WarehouseInstance& data) {
