@@ -1,42 +1,53 @@
 #ifndef HEUR_2_HPP
 #define HEUR_2_HPP
 
-#include <vector>
-#include <unordered_map>
-#include <utility> // for pair
+#include <random>  // for mt19937
 #include <set>
-#include <random> // for mt19937
+#include <unordered_map>
+#include <utility>  // for pair
+#include <vector>
 
+#include "Heur.hpp"
 #include "WarehouseInstance.hpp"
 #include "WarehouseSolution.hpp"
 
-using namespace std;
+class Heuristic_2 : public Heuristic {
+   public:
+    using Heuristic::Heuristic;  // Use parent constructor
 
-class Heuristic_2 {
-    public:
-        Heuristic_2();
-        Heuristic_2(const WarehouseSolution& initial_solution);
+    /**
+     * @brief Intra-circuit improvement heuristic: local search by swapping two products within the interval of racks of their circuit. Only the costs
+     * of the affected orders are recalculated to evaluate the delta.
+     */
+    void improve(int max_attempts = 5000, int stagnation = 5000);
 
-        void improve(const int max_attempts_per_circuit = 5000, const int stagnation_threshold = 5000);
+   private:
+    // METHODS USED IN THE IMPROVEMENT PHASE
+    /**
+     * @brief Select two distinct random products from the given circuit. Returns false if a valid pair cannot be selected (e.g., all products are in
+     * the same rack).
+     */
+    bool Heuristic_2::selectSwapCandidates(int circuit_idx, int& p1, int& p2);
 
-        WarehouseSolution solution;
-        long long solution_cost;
+    /**
+     * @brief Get the set of orders affected by swapping products p1 and p2.
+     */
+    set<int> Heuristic_2::getAffectedOrders(int p1, int p2);
 
-        void build_product_to_orders();
-        void build_rack_used();
-        void build_circuit_intervals();
-        void calcul_cost_and_path();
+    /**
+     * @brief Calculate the delta cost of swapping products p1 and p2 by only recalculating the costs of the affected orders.
+     */
+    long long Heuristic_2::calculateDelta(int p1, int p2, const std::set<int>& affected_orders);
 
-        unordered_map<int, vector<int>> product_to_orders;
-        vector<vector<int>> path;
-        vector<vector<int>> circuit_products;
-        vector<int> rack_used;
-        vector<pair<int, int>> circuit_intervals;
+    /**
+     * @brief Apply the swap of products p1 and p2 and update the solution and paths of affected orders accordingly.
+     */
+    void Heuristic_2::applySwap(int p1, int p2, const std::set<int>& affected_orders);
 };
 
-vector<vector<int>> build_product_in_circuit(const WarehouseInstance& data);
-vector<int> read_frequency_circuits(string filename, int num_circuits);
-vector<int> new_rack_capacity(const WarehouseInstance& data);
-vector<int> initial_solution(const WarehouseInstance& data, const vector<int>& frequency_circuits);
+/**
+ * @brief Builds an initial solution by assigning products from the most frequent circuits to the racks closest to the exit.
+ */
+std::vector<int> buildInitialSolution(const WarehouseInstance& data, const vector<int>& frequency_circuits);
 
-#endif // HEUR_2_HPP
+#endif

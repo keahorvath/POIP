@@ -4,16 +4,15 @@
 #include <iostream>
 #include <string>
 
+#include "Utilitary.hpp"
+
 using namespace std;
 
 WarehouseLoader::WarehouseLoader(string warehouse_dir_) : warehouse_dir(warehouse_dir_) {};
 
 vector<vector<int>> WarehouseLoader::loadAdjacencyMatrix() {
     string file_name = warehouse_dir + "/rack_adjacency_matrix.txt";
-    ifstream file(file_name);
-    if (!file) {
-        throw runtime_error("Error: cannot open file " + file_name);
-    }
+    ifstream file = openFile(file_name);
     int nb_racks;
     file >> nb_racks;
     vector<vector<int>> adj_matrix(nb_racks);
@@ -29,10 +28,7 @@ vector<vector<int>> WarehouseLoader::loadAdjacencyMatrix() {
 
 vector<int> WarehouseLoader::loadRackCapacity() {
     string file_name = warehouse_dir + "/rack_capacity.txt";
-    ifstream file(file_name);
-    if (!file) {
-        throw runtime_error("Error: cannot open file " + file_name);
-    }
+    ifstream file = openFile(file_name);
     int nb_racks;
     file >> nb_racks;
     vector<int> rack_cap;
@@ -46,27 +42,21 @@ vector<int> WarehouseLoader::loadRackCapacity() {
 
 vector<int> WarehouseLoader::loadProductCircuits() {
     string file_name = warehouse_dir + "/product_circuit.txt";
-    ifstream file(file_name);
-    if (!file) {
-        throw runtime_error("Error: cannot open file " + file_name);
-    }
+    ifstream file = openFile(file_name);
     int nb_prod;
     file >> nb_prod;
     vector<int> prod_circuits;
     for (int i = 0; i < nb_prod; i++) {
         int val;
         file >> val;
-        prod_circuits.push_back(val-1);
+        prod_circuits.push_back(val - 1);
     }
     return prod_circuits;
 }
 
 vector<vector<int>> WarehouseLoader::loadAislesRacks() {
     string file_name = warehouse_dir + "/aisle_racks.txt";
-    ifstream file(file_name);
-    if (!file) {
-        throw runtime_error("Error: cannot open file " + file_name);
-    }
+    ifstream file = openFile(file_name);
     int nb_aisles;
     file >> nb_aisles;
     vector<vector<int>> aislesracks(nb_aisles);
@@ -84,10 +74,7 @@ vector<vector<int>> WarehouseLoader::loadAislesRacks() {
 
 vector<vector<int>> WarehouseLoader::loadOrders() {
     string file_name = warehouse_dir + "/orders.txt";
-    ifstream file(file_name);
-    if (!file) {
-        throw runtime_error("Error: cannot open file " + file_name);
-    }
+    ifstream file = openFile(file_name);
     int nb_orders;
     file >> nb_orders;
     vector<vector<int>> orders(nb_orders);
@@ -105,10 +92,7 @@ vector<vector<int>> WarehouseLoader::loadOrders() {
 
 vector<int> WarehouseLoader::loadMetadata() {
     string file_name = warehouse_dir + "/metadata.txt";
-    ifstream file(file_name);
-    if (!file) {
-        throw runtime_error("Error: cannot open file " + file_name);
-    }
+    ifstream file = openFile(file_name);
     vector<int> metadata;
     for (int i = 0; i < 7; i++) {
         int val;
