@@ -1,6 +1,7 @@
 #ifndef HEUR_HPP
 #define HEUR_HPP
 
+#include <climits>
 #include <set>
 #include <unordered_map>
 #include <utility>
@@ -9,6 +10,10 @@
 #include "WarehouseInstance.hpp"
 #include "WarehouseSolution.hpp"
 
+/**
+ * @class Heuristic
+ * @brief Mother class for heuristics 1 and 2
+ */
 class Heuristic {
    public:
     Heuristic(const WarehouseSolution& initial_solution);

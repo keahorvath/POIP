@@ -14,11 +14,24 @@
 
 // Contains all the utilitary functions used in the project
 
+/**
+ * @brief Open the given file and test that it is valid
+ */
 std::ifstream openFile(const std::string& filename);
 
+/**
+ * @brief Swap the values of two integers
+ */
 void swap(int& a, int& b);
+
+/**
+ * @brief Swap the values of two vectors
+ */
 void swap(std::vector<int>& a, std::vector<int>& b);
 
+/**
+ * @brief Calculate the cost of a solution
+ */
 int calculateCost(const WarehouseSolution& solution);
 
 // File parsing functions for heuristics
@@ -45,13 +58,22 @@ std::vector<std::vector<int>> readNeverUsedProducts(std::string file_name, int n
  */
 std::unordered_map<int, std::vector<int>> readProductPairs(const std::string& file_name, int num_products);
 
+/**
+ * @brief Reads a file containing information regarding the concordance of all the circuits
+ */
 std::vector<std::vector<int>> readConcordanceCircuit(const std::string& file_name);
 
+/**
+ * @brief Loads circuit popularity data from a file and ensures all valid circuit IDs are included in the output.
+ */
 void readFrequencyCircuitsAndCounts(const std::string& file_name, int num_circuits, std::vector<int>& frequency_circuits,
                                     std::vector<int>& freq_count);
 
 // Other utilitary functions
 
+/**
+ * @brief @brief Constructs a circuit sequence by clustering highly correlated circuits using a weighted greedy approach.
+ */
 std::vector<int> buildCircuitOrderByConcordanceFastWeighted(const std::vector<int>& frequency_circuits, const std::vector<std::vector<int>>& concord,
                                                             const std::vector<int>& freq_count);
 /**

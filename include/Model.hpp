@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MODEL_HPP
+#define MODEL_HPP
 
 #include <fstream>
 #include <iostream>
@@ -26,3 +27,5 @@ class Model {
    private:
     const WarehouseInstance data;
 };
+
+#endif

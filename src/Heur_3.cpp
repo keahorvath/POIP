@@ -31,6 +31,26 @@ vector<int> Heuristic_3::buildInitialSolution(const vector<int>& frequency_circu
         reverse(never_used[circuit].begin(), never_used[circuit].end());
         fillWarehouseForCircuit(circuit, freq_products[circuit], never_used[circuit], product_pairs, used_products);
     }
+
+    // --- 4) SECURITY : place remaining products ---
+    for (int p = 0; p < solution.data.num_products; p++) {
+        if (!used_products[p] || solution.assignment[p] == -1) {
+            bool force_assigned = false;
+            // Look for any empty space
+            for (int i = 0; i < solution.data.num_aisles && !force_assigned; i++) {
+                for (int rack : solution.data.aisles_racks[i]) {
+                    if (rackHasSpace(rack)) {
+                        placeProduct(p, rack, used_products);
+                        force_assigned = true;
+                        break;
+                    }
+                }
+            }
+            if (!force_assigned) {
+                cerr << "[ALERTE H3] Impossible de forcer le placement du produit " << p << " : Entrepôt plein !" << endl;
+            }
+        }
+    }
     return solution.assignment;
 }
 
@@ -203,7 +223,7 @@ void Heuristic_3::improve(const int max_attempt_per_circuit, const int stagnatio
         int attempts, stagnant = 0;
         long long fact = factorial((int)circuit_products[c].size(), max_attempt_per_circuit);
         int max_attempts_per_circuit = (int)std::min((long long)max_attempt_per_circuit, fact);
-        cout << " " << compt << endl;
+        // cout << " " << compt << endl;
         compt++;
 
         while (attempts < max_attempts_per_circuit && stagnant < stagnation_threshold) {

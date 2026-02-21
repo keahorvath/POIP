@@ -34,7 +34,7 @@ void RL_products(const WarehouseInstance& data, WarehouseSolution& current_solut
             if (current_solution.assignment[current_sequence[f][k]] != current_solution.assignment[current_sequence[f][k + 1]]) {
                 swap(current_solution.assignment[current_sequence[f][k]], current_solution.assignment[current_sequence[f][k + 1]]);
 
-                int new_cost = calculate_cost(current_solution);
+                int new_cost = calculateCost(current_solution);
                 // cout << "new cost : " << new_cost << endl;
 
                 if (new_cost < current_cost) {
@@ -53,7 +53,7 @@ void RL_circuits(const WarehouseInstance& data, WarehouseSolution& current_solut
                  int& current_cost) {
     for (int f = 0; f < data.num_circuits - 1; f++) {
         swap(current_sequence[f], current_sequence[f + 1]);
-        int new_cost = calculate_cost(glouton(data, current_sequence));
+        int new_cost = calculateCost(glouton(data, current_sequence));
 
         if (new_cost < current_cost) {
             stop = false;
@@ -71,7 +71,7 @@ WarehouseSolution Heur_1(const WarehouseInstance& data, int iter_max) {
         current_sequence[data.product_circuit[j]].push_back(j);
     }
     WarehouseSolution current_solution = glouton(data, current_sequence);
-    int current_cost = calculate_cost(current_solution);
+    int current_cost = calculateCost(current_solution);
     int iter = 0;
     bool stop = false;
     while (++iter < iter_max && !stop) {

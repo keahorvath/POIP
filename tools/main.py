@@ -90,9 +90,9 @@ def main(warehouse_dir, instance_name: str):
 
 if __name__ == "__main__":
     #instance_name = "warehouse_toy"
-    instance_name = "warehouse_big_market"
+    #instance_name = "warehouse_big_market"
     #instance_name = "warehouse_big_category"
-    #instance_name = "warehouse_big_family"
+    instance_name = "warehouse_big_family"
 
     print(f"Lancement instance : {instance_name}")
     main(get_warehouse_dir(instance_name), instance_name)

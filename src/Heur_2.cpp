@@ -19,7 +19,7 @@ static std::mt19937 rng((std::random_device())());
 void Heuristic_2::improve(const int max_attempt_per_circuit, const int stagnation_threshold) {
     int compt = 0;
     for (int c = 0; c < solution.data.num_circuits; c++) {
-        cout << compt << " " << endl;
+        // cout << compt << " " << endl;
         compt++;
         if (circuit_products[c].empty() || circuit_products[c].size() < 2) continue;
         if (circuit_intervals[c].first > circuit_intervals[c].second) continue;  // Circuit not assigned, ignore
@@ -144,6 +144,28 @@ vector<int> buildInitialSolution(const WarehouseInstance& data, const vector<int
             }
             if (!assigned) {
                 std::cerr << "Produit " << product << " non assigné\n";
+            }
+        }
+    }
+
+    // SECURITY : place all orphan products in first possible position
+    for (int p = 0; p < data.num_products; p++) {
+        if (assignment[p] == -1) {
+            bool force_assigned = false;
+            for (int i = 0; i < (int)data.aisles_racks.size() && !force_assigned; i++) {
+                for (int r : data.aisles_racks[i]) {
+                    if (r < (int)rack_content.size() && rack_capacity[r] > 0 && rack_content[r] < rack_capacity[r]) {
+                        assignment[p] = r;
+                        rack_content[r]++;
+                        force_assigned = true;
+                        break;
+                    }
+                }
+            }
+            if (!force_assigned) {
+                cerr << "[ALERTE] Impossible de forcer le placement du produit " << p << " : Entrepôt plein !" << endl;
+            } else {
+                cout << "[INFO] Produit orphelin " << p << " forcé dans un rack." << endl;
             }
         }
     }

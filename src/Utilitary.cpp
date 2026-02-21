@@ -115,8 +115,11 @@ vector<vector<int>> readNeverUsedProducts(string file_name, int num_circuit, int
     int count = 0;
     for (int p = 0; p < num_products; p++) {
         if (used.find(p) == used.end()) {
-            never_used[product_circuit[p]].push_back(p);
-            count++;
+            int c_id = product_circuit[p];          // Get circuit ID
+            if (c_id >= 0 && c_id < num_circuit) {  // Security
+                never_used[c_id].push_back(p);
+                count++;
+            }
         }
     }
     cout << "Number of never used products ratio : " << count * 100.0 / num_products << " % and count : " << count << endl;
@@ -239,13 +242,15 @@ vector<int> buildCircuitOrderByConcordanceFastWeighted(const vector<int>& freque
 }
 
 vector<vector<int>> buildProductInCircuit(const WarehouseInstance& data) {
-    vector<vector<int>> product_in_circuit = vector<vector<int>>(data.num_circuits, vector<int>(0));
+    vector<vector<int>> product_in_circuit(data.num_circuits);
     for (int p = 0; p < data.num_products; p++) {
-        product_in_circuit[data.product_circuit[p]].push_back(p);
+        int c_id = data.product_circuit[p];
+        if (c_id >= 0 && c_id < data.num_circuits) {
+            product_in_circuit[c_id].push_back(p);
+        }
     }
     return product_in_circuit;
 }
-
 vector<int> nbFreeLoc(const WarehouseInstance& data) {
     vector<int> num_free_loc(data.num_aisles, 0);
     for (int i = 0; i < data.num_aisles; i++) {

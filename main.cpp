@@ -115,6 +115,9 @@ void writeAndCheckSolution(const WarehouseInstance& data, WarehouseSolution& sol
     // } else {
     //     cout << "[ERREUR] Solution is not valid" << endl;
     // }
+
+    string command = "python3 tools/checker.py " + warehouse_dir + " " + method_name;
+    int result = system(command.c_str());
 }
 
 string short_instance_name(const string& instance_name) {
@@ -213,10 +216,9 @@ int main() {
     cout << "Exécution de : build_circuit_order_by_concordance_fast_weighted" << endl;
     vector<int> order_circuit = buildCircuitOrderByConcordanceFastWeighted(frequency_circuits, concord, freq_count);
 
-    cout << "Exécution de : initial_solution" << endl;
-    vector<int> sol_initial = buildInitialSolution(data, frequency_circuits);
-
-    WarehouseSolution initial_sol(data, sol_initial);
+    cout << "Exécution de : buildInitialSolution" << endl;
+    vector<int> initial_assignment = buildInitialSolution(data, frequency_circuits);
+    WarehouseSolution initial_sol(data, initial_assignment);
 
     // // ---------------------------------------------------------------------
     // // TEST MODEL 1
@@ -278,13 +280,11 @@ int main() {
 
         auto duration = chrono::duration_cast<chrono::seconds>(end_time - start_time).count();
 
-        long long cost = calculate_cost(sol);
+        long long cost = calculateCost(sol);
         cout << "Résultat : coût H1 = " << cost << endl;
         cout << "Temps d'exécution : " << duration << " secondes" << endl;
 
         writeAndCheckSolution(data, sol, WAREHOUSE_DIR, "heur_1");
-
-        // écriture fichier
         writeMethodReport(INSTANCE_SHORT, "H1", cost, duration);
     }
 
@@ -292,24 +292,20 @@ int main() {
     // TEST HEURISTIQUE 3
     // ---------------------------------------------------------------------
 
-    bool has_sol_H3 = false;                 // Necessaire à pour H2
-    WarehouseSolution sol_H3 = initial_sol;  // valeur par défaut
-
+    bool has_sol_H3 = false;  // Necessaire à pour H2
+    Heuristic_3 H3(initial_sol);
     if (test_H3) {
         cout << "\n==========================" << endl;
         cout << "TEST HEURISTIQUE 3" << endl;
         cout << "==========================" << endl;
 
-        cout << "Exécution de : initial_solution3 (H3)" << endl;
-        WarehouseSolution sol_for_h3(data, sol_initial);
-        Heuristic_3 H3(sol_for_h3);
-        H3.buildInitialSolution(order_circuit, freq_products, product_pairs, never_used);
+        cout << "Exécution de : buildInitialSolution (H3)" << endl;
+        vector<int> assignment_H3 = H3.buildInitialSolution(order_circuit, freq_products, product_pairs, never_used);
 
-        sol_H3 = H3.solution;
-        has_sol_H3 = false;
+        has_sol_H3 = true;
 
-        long long cost = calculate_cost(H3.solution);
-        cout << "Résultat : coût avant imrpove = " << cost << endl;
+        long long cost = calculateCost(H3.solution);
+        cout << "Résultat : coût avant improve = " << cost << endl;
 
         int max_iter_circuit = 50000;
         int max_iter_without_improv = 100;
@@ -322,8 +318,8 @@ int main() {
         auto duration = chrono::duration_cast<chrono::seconds>(end_time - start_time).count();
         cout << "Temps d'exécution : " << duration << " secondes" << endl;
 
-        int cost_2 = calculate_cost(H3.solution);
-        cout << "Résultat : coût avaprès improve = " << cost_2 << endl;
+        int cost_2 = calculateCost(H3.solution);
+        cout << "Résultat : coût après improve = " << cost_2 << endl;
 
         writeAndCheckSolution(data, H3.solution, WAREHOUSE_DIR, "heur_3");
 
@@ -340,18 +336,15 @@ int main() {
 
         // Choose start
         bool start_from_H3 = false;
-
-        WarehouseSolution base_solution = initial_sol;
-
         if (start_from_H3 && has_sol_H3) {
             cout << "[INFO] H2 démarre depuis la solution H3." << endl;
-            base_solution = sol_H3;
+            initial_sol = H3.solution;
         } else {
             cout << "[INFO] H2 démarre depuis la solution initiale." << endl;
         }
 
         cout << "Exécution de : initialisation H2" << endl;
-        Heuristic_2 H2(base_solution);
+        Heuristic_2 H2(initial_sol);
 
         int max_iter_circuit = 50000;
         int max_iter_without_improv = 100;
@@ -366,7 +359,6 @@ int main() {
         cout << "Résultat : coût après H2 = " << H2.solution_cost << endl;
 
         writeAndCheckSolution(data, H2.solution, WAREHOUSE_DIR, "heur_2");
-
         writeMethodReport(INSTANCE_SHORT + "InitH2", "H2", H2.solution_cost, duration);
     }
 

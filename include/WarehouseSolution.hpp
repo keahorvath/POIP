@@ -14,6 +14,13 @@ struct WarehouseSolution {
     const WarehouseInstance data;
     std::vector<int> assignment;
 
+    WarehouseSolution& operator=(const WarehouseSolution& other) {
+        if (this != &other) {
+            this->assignment = other.assignment;
+        }
+        return *this;
+    }
+
     /**
      * @brief Solution constructor
      */

@@ -7,20 +7,26 @@
 #include "WarehouseLoader.hpp"
 #include "WarehouseSolution.hpp"
 
-int calculate_cost(const WarehouseSolution& solution);
-std::vector<int> nbFreeLoc(const WarehouseInstance& data);
-std::vector<int> New_rack_capacity(const WarehouseInstance& data);
-
+/**
+ * @brief Generates a warehouse solution using a greedy assignment strategy based on a circuit sequence.
+ */
 WarehouseSolution glouton(const WarehouseInstance& data, std::vector<std::vector<int>>& current_sequence);
 
-void swap(int& a, int& b);
-void swap(std::vector<int>& a, std::vector<int>& b);
-
+/**
+ * @brief Performs Local Search (RL) by swapping products within the same circuit to minimize cost.
+ */
 void RL_products(const WarehouseInstance& data, WarehouseSolution& current_solution, std::vector<std::vector<int>>& current_sequence, bool& stop,
                  int& current_cost);
+
+/**
+ * @brief Performs Local Search (RL) by reordering the sequence of circuits to improve global travel distance.
+ */
 void RL_circuits(const WarehouseInstance& data, WarehouseSolution& current_solution, std::vector<std::vector<int>>& current_sequence, bool& stop,
                  int& current_cost);
 
+/**
+ * @brief Heuristic 1: iteratively combines greedy construction and local search improvements.
+ */
 WarehouseSolution Heur_1(const WarehouseInstance& data, int iter_max);
 
 #endif

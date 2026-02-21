@@ -11,7 +11,8 @@ Verifications :
 import os
 import math
 from collections import defaultdict
-
+import sys
+from warehouse_loader import WarehouseLoader # Assure-toi d'avoir ton loader Python
 
 def read_solution(file_path):
     """Lit rack_product_assignment.txt : ligne 0 = nb produits, puis un rack par ligne."""
@@ -122,3 +123,50 @@ def checker(instance, solution_dir):
     except (ValueError, FileNotFoundError) as e:
         print(f"ERREUR : {e}")
         return None
+    
+if __name__ == "__main__":
+    # Vérification des arguments envoyés par le C++
+    if len(sys.argv) < 3:
+        print("Usage: python3 checker.py <instance_name> <method_short_name>")
+        sys.exit(1)
+
+    instance_name = sys.argv[1]   # ex: warehouse_big_family
+    method_name = sys.argv[2]     # ex: heur_2
+
+    # Construction des chemins
+    # On suppose que le script est lancé depuis la racine du projet
+    solution_file = os.path.join(instance_name, "solutions", f"rack_product_assignment_{method_name}.txt")
+
+    try:
+        # 1. Chargement de l'instance
+        print(f"[PYTHON] Chargement de l'instance : {instance_name}...")
+        loader = WarehouseLoader(instance_name)
+        instance = loader.load_all()
+
+        # 2. Lecture de la solution générée par le C++
+        if not os.path.exists(solution_file):
+            print(f"[PYTHON] ERREUR : Fichier introuvable {solution_file}")
+            sys.exit(1)
+            
+        rack_of_product = read_solution(solution_file)
+
+        # 3. Exécution des vérifications
+        print(f"[PYTHON] Vérification de la méthode : {method_name}")
+        check_all_products_assigned(instance, rack_of_product)
+        check_rack_capacity(instance, rack_of_product)
+        check_aeration(instance, rack_of_product)
+        check_circuit_contiguity(instance, rack_of_product)
+
+        # 4. Calcul du coût final
+        cost = calculate_cost(instance, rack_of_product)
+        print(f"\n[OK] SOLUTION VALIDE.")
+        print(f"[SCORE] Coût total calculé par Python : {cost}")
+        
+        # On quitte avec 0 pour indiquer au C++ que tout est OK
+        sys.exit(0)
+
+    except Exception as e:
+        print(f"\n[ECHEC] La solution est invalide !")
+        print(f"[RAISON] {str(e)}")
+        # On quitte avec 1 pour indiquer une erreur au C++
+        sys.exit(1)

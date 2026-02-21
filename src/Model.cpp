@@ -1,4 +1,3 @@
-
 #include "Model.hpp"
 
 #include "gurobi_c++.h"
@@ -9,7 +8,7 @@ Model::Model(const WarehouseInstance& Data) : data(Data) {}
 
 WarehouseSolution Model::solve() {
     GRBEnv env(true);
-    //env.set(GRB_IntParam_OutputFlag, 0);
+    // env.set(GRB_IntParam_OutputFlag, 0);
     env.start();
 
     GRBModel model(env);
@@ -19,38 +18,39 @@ WarehouseSolution Model::solve() {
     ///////////////////////////
 
     // Variables Xij
-    vector<vector<GRBVar>> x(data.num_racks, vector<GRBVar> (data.num_products));
-    for (int i=1; i<data.num_racks-1; i++){
-        for (int j=0; j<data.num_products; j++){
+    vector<vector<GRBVar>> x(data.num_racks, vector<GRBVar>(data.num_products));
+    for (int i = 1; i < data.num_racks - 1; i++) {
+        for (int j = 0; j < data.num_products; j++) {
             x[i][j] = model.addVar(0.0, 1.0, 0.0, GRB_BINARY, "x_" + to_string(i) + "_" + to_string(j));
         }
     }
 
     // Variables Yff'
-    vector<vector<GRBVar>> y(data.num_circuits, vector<GRBVar> (data.num_circuits));
-    for (int f=0; f<data.num_circuits; f++){
-        for (int g=0; g<data.num_circuits; g++){
-            if (f!=g){
+    vector<vector<GRBVar>> y(data.num_circuits, vector<GRBVar>(data.num_circuits));
+    for (int f = 0; f < data.num_circuits; f++) {
+        for (int g = 0; g < data.num_circuits; g++) {
+            if (f != g) {
                 y[f][g] = model.addVar(0.0, 1.0, 0.0, GRB_BINARY, "y_" + to_string(f) + "_" + to_string(g));
             }
         }
     }
 
     // Variables Zcii'
-    vector<vector<vector<GRBVar>>> z(data.num_orders, vector<vector<GRBVar>> (data.num_racks, vector<GRBVar> (data.num_racks)));
-    for (int c=0; c<data.num_orders; c++){
-        for (int i=0; i<data.num_racks; i++){
-            for (int j=i+1; j<data.num_racks; j++){
-                z[c][i][j] = model.addVar(0.0, 1.0, data.adjacency[i][j], GRB_BINARY, "z_" + to_string(c) + "_" + to_string(i) + "_" + to_string(j));
+    vector<vector<vector<GRBVar>>> z(data.num_orders, vector<vector<GRBVar>>(data.num_racks, vector<GRBVar>(data.num_racks)));
+    for (int c = 0; c < data.num_orders; c++) {
+        for (int i = 0; i < data.num_racks; i++) {
+            for (int ii = i + 1; ii < data.num_racks; ii++) {
+                z[c][i][ii] =
+                    model.addVar(0.0, 1.0, data.adjacency[i][ii], GRB_BINARY, "z_" + to_string(c) + "_" + to_string(i) + "_" + to_string(ii));
             }
         }
     }
 
     ///////////////////////////
-    ////// Contraintes ////////
+    ////// Constraints ////////
     ///////////////////////////
 
-    // Chaque objet assigné à un rack
+    // Each product assigned to a rack
     for (int j = 0; j < data.num_products; j++) {
         GRBLinExpr lhs = 0;
         for (int i = 1; i < data.num_racks - 1; i++) {
@@ -59,7 +59,7 @@ WarehouseSolution Model::solve() {
         model.addConstr(lhs == 1, "assignment_" + to_string(j));
     }
 
-    // Capacité des racks
+    // Rack capacities
     for (int i = 1; i < data.num_racks - 1; i++) {
         GRBLinExpr lhs = 0;
         for (int j = 0; j < data.num_products; j++) {
@@ -68,7 +68,7 @@ WarehouseSolution Model::solve() {
         model.addConstr(lhs <= data.rack_capacity[i], "capacity_" + to_string(i));
     }
 
-    // Aération
+    // Aeration
     for (int k = 0; k < data.num_aisles; k++) {
         GRBLinExpr lhsL = 0;
         int lhsR = 0;
@@ -80,18 +80,18 @@ WarehouseSolution Model::solve() {
             lhsL += data.rack_capacity[i] - lhs;
             lhsR += data.rack_capacity[i] * data.aeration_rate;
         }
-        lhsR = (lhsR-1)/100 + 1;
+        lhsR = (lhsR - 1) / 100 + 1;
         model.addConstr(lhsL >= lhsR, "aeration_" + to_string(k));
     }
 
-    // Une famille avant l'autre
+    // One family before the other
     for (int f = 0; f < data.num_circuits; f++) {
         for (int g = f + 1; g < data.num_circuits; g++) {
             model.addConstr(y[f][g] + y[g][f] == 1, "circuits_a_" + to_string(f) + "_" + to_string(g));
         }
     }
 
-    // Cohérence sur l'ordre des familles
+    // Coherent family order
     for (int f = 0; f < data.num_circuits; f++) {
         for (int g = 0; g < data.num_circuits; g++) {
             if (f != g) {
@@ -104,7 +104,7 @@ WarehouseSolution Model::solve() {
         }
     }
 
-    // Cohérence sur l'ordre des produits par famille
+    // Coherent product order per family
     for (int f = 0; f < data.num_circuits; f++) {
         for (int g = 0; g < data.num_circuits; g++) {
             if (f != g) {
@@ -125,7 +125,7 @@ WarehouseSolution Model::solve() {
         }
     }
 
-    // La commande passe par les racks contenant ses produits
+    // An order goes through the racks containing its products
     for (int c = 0; c < data.num_orders; c++) {
         for (int j : data.orders[c]) {
             for (int ii = 1; ii < data.num_racks - 1; ii++) {
@@ -138,7 +138,7 @@ WarehouseSolution Model::solve() {
         }
     }
 
-    // Contraintes de flot
+    // Flow constraints
     for (int c = 0; c < data.num_orders; c++) {
         GRBLinExpr lhs = 0;
         for (int i = 1; i < data.num_racks - 1; i++) {
@@ -167,10 +167,10 @@ WarehouseSolution Model::solve() {
             model.addConstr(lhs == 0);
         }
     }
-    
+
     model.optimize();
 
-    // Récupération de la solution
+    // Get solution
     vector<int> assignment(data.num_products, 0);
     for (int j = 0; j < data.num_products; j++) {
         for (int i = 1; i < data.num_racks - 1; i++) {
