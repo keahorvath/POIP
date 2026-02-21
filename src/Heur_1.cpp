@@ -82,8 +82,6 @@ WarehouseSolution Heur_1(const WarehouseInstance& data, int iter_max) {
         RL_circuits(data, current_solution, current_sequence, stop, current_cost);
         // cout << "cost2 : " << current_cost << endl;
     }
-
     // cout << "nb d'iter : " << iter << endl << "stop : " << stop << endl << endl;
-
     return current_solution;
 }
